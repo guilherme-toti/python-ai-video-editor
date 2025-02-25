@@ -1,0 +1,7 @@
+bin/
+__pycache__/
+*.pyc
+venv/
+output/*
+tests/output/*
+*.mp4

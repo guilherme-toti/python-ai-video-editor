@@ -1,0 +1,110 @@
+# Video Processor
+
+This project processes videos in Brazilian Portuguese, editing out breaths, mistakes, and repeated sentences (keeping the last instance), and generates:
+- An edited video in the `output` folder.
+- A captions text file in the `output` folder.
+- A social media text file in the `output` folder with LinkedIn and Threads content.
+
+## Prerequisites
+
+- Python 3.9
+- pyenv (recommended for Python version management)
+- Docker (optional, for containerized deployment)
+- Ollama installed locally for content generation
+
+## Setup
+
+### 1. Install pyenv (if not already installed)
+```bash
+curl https://pyenv.run | bash
+```
+
+### 2. Install Python 3.9
+```bash
+pyenv install 3.9.0
+pyenv local 3.9.0
+```
+
+### 3. Create a virtual environment
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+### 4. Install dependencies
+```bash
+make install
+```
+
+## Usage
+1. Place your raw videos in the raw folder.
+2. Run the project:
+```bash
+make run
+```
+3. Find the outputs in the output folder:
+- Edited video: edited_<video_name>.mp4
+- Captions: captions_<video_name>.txt
+- Social media content: social_media_<video_name>.txt
+
+## Testing
+Run tests and check coverage:
+```bash
+make test
+```
+
+## Docker Deployment
+1. Build the Docker image
+```bash
+make docker-build
+```
+
+2. Run the container
+```bash
+make docker-run
+```
+
+Mounts:
+- raw folder: Input videos
+- output folder: Processed outputs
+
+## Project Structure
+- src/: Source code modules
+- tests/: Test cases and sample videos
+- raw/: Input videos
+- output/: Processed outputs
+
+## Notes
+- Ensure Ollama is running locally for social media content generation.
+- The project relies on Whisper for transcription, spaCy for text analysis, and MoviePy for video editing.
+- Sample videos for testing should include filler words, repeats, and breaths for comprehensive testing.
+
+## Troubleshooting
+- Transcription errors: Ensure the video audio is clear and in Brazilian Portuguese.
+- Ollama issues: Verify Ollama is configured correctly and running.
+- Coverage issues: Add more test cases if coverage is below 80%.
+
+### 5. Running the Project
+1. **Set up the environment**:
+   ```bash
+   pyenv install 3.9.0
+   pyenv local 3.9.0
+   python -m venv venv
+   source venv/bin/activate
+   make install
+```
+
+2. Place videos in raw/ folder.
+3. Run the project:
+```bash
+make run
+```
+4. Run tests:
+```bash
+make test
+```
+5. Optional: Use Docker:
+```bash
+make docker-build
+make docker-run
+```

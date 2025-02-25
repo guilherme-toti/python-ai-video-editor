@@ -1,0 +1,6 @@
+moviepy
+spacy
+scikit-learn
+pytest
+pytest-cov
+ollama
