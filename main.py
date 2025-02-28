@@ -1,42 +1,54 @@
 import os
-from transcription import transcribe_video
-from text_analysis import analyze_text
-from video_editing import edit_video
-from text_generation import generate_captions, generate_social_media_content
+import traceback
 
-def process_video(video_path, output_dir):
-    """
-    Process a single video and generate outputs.
-    
-    Args:
-        video_path (str): Path to the video file.
-        output_dir (str): Directory to save outputs.
-    """
-    # Transcribe video
-    transcription, segments = transcribe_video(video_path)
-    
-    # Analyze text
-    segments_to_keep = analyze_text(transcription, segments)
-    
-    # Edit video
-    final_video_path = edit_video(video_path, segments_to_keep, output_dir)
-    
-    # Generate captions
-    captions = generate_captions(segments_to_keep)
-    captions_path = os.path.join(output_dir, f"captions_{os.path.basename(video_path)}.txt")
-    with open(captions_path, "w", encoding="utf-8") as f:
-        f.write(captions)
-    
-    # Generate social media content
-    linkedin_content, threads_content = generate_social_media_content(transcription)
-    social_media_path = os.path.join(output_dir, f"social_media_{os.path.basename(video_path)}.txt")
-    with open(social_media_path, "w", encoding="utf-8") as f:
-        f.write(f"LinkedIn:\n{linkedin_content}\n\nThreads:\n{threads_content}")
+from src.config.settings import Settings
+from src.core.progress_manager import ProgressManager
+from src.core.video_processor import VideoProcessor
+from src.services.ai.openai import OpenAI
+from src.services.audio.extractor import AudioExtractorService
+from src.services.transcription.service import TranscriptionService
+from src.services.text_analysis.analyzer import TextAnalyzerService
+from src.services.video_editing.editor import VideoEditorService
+from src.services.content.generator import ContentGeneratorService
+
+
+def main():
+    # Load settings
+    settings = Settings()
+
+    # Create service instances
+    ai_service = OpenAI()
+    audio_extractor = AudioExtractorService(settings)
+    transcriber = TranscriptionService(settings)
+    text_analyzer = TextAnalyzerService(settings=settings, ai_service=ai_service)
+    video_editor = VideoEditorService(settings)
+    content_generator = ContentGeneratorService(settings=settings, ai_service=ai_service)
+    progress_manager = ProgressManager()
+
+    # Create the video processor with all dependencies
+    processor = VideoProcessor(
+        audio_extractor=audio_extractor,
+        transcriber=transcriber,
+        text_analyzer=text_analyzer,
+        video_editor=video_editor,
+        content_generator=content_generator,
+        settings=settings,
+        progress_manager=progress_manager
+    )
+
+    # Process all videos
+    for video_file in os.listdir(settings.raw_dir):
+        if not video_file.lower().endswith(settings.video_formats):
+            continue
+
+        video_path = os.path.join(settings.raw_dir, video_file)
+        try:
+            processor.process_video(video_path)
+            print(f"Successfully processed {video_file}")
+        except Exception as e:
+            traceback.print_exc()
+            print(f"Error processing {video_file}: {str(e)}")
+
 
 if __name__ == "__main__":
-    raw_dir = "raw"
-    output_dir = "output"
-    os.makedirs(output_dir, exist_ok=True)
-    for video_file in os.listdir(raw_dir):
-        video_path = os.path.join(raw_dir, video_file)
-        process_video(video_path, output_dir)
+    main()

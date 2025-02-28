@@ -5,3 +5,8 @@ venv/
 output/*
 tests/output/*
 *.mp4
+data/raw/*
+data/temp/*
+.env
+.idea
+*.DS_Store

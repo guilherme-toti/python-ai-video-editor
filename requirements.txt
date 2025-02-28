@@ -1,6 +1,11 @@
+openai-whisper
 moviepy
-spacy
-scikit-learn
 pytest
 pytest-cov
-ollama
+torch
+torchaudio
+soundfile
+transformers
+openai
+python-dotenv
+rich
