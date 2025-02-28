@@ -2,11 +2,8 @@ bin/
 __pycache__/
 *.pyc
 venv/
-output/*
-tests/output/*
 *.mp4
-data/raw/*
-data/temp/*
+data/*
 .env
 .idea
 *.DS_Store
