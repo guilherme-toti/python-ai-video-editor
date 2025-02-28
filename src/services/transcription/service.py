@@ -77,27 +77,14 @@ class TranscriptionService:
 
             # Define segment path
             segment_path = os.path.join(self.folder_path, f"{i}.mp3")
-            segment_text = None
 
             # Check if segment file already exists
             if os.path.exists(segment_path):
-                try:
-                    # Transcribe the existing segment
-                    result = self.speech_recognition_service.transcribe(
-                        audio_path=segment_path
-                    )
-
-                    segment_text = result["text"].strip()
-                    print(
-                        "    -> Using existing segment file: "
-                        f"{i}/{total_segments}..."
-                    )
-                except Exception as e:
-                    print(f"    !! Error using existing segment: {e}")
-                    segment_text = None
-
-            # If segment doesn't exist or transcription failed, create it
-            if segment_text is None:
+                print(
+                    "    -> Using existing segment file: "
+                    f"{i}/{total_segments}..."
+                )
+            else:
                 # Extract the segment audio using ffmpeg
                 print(f"    -> Transcribing segment {i}/{total_segments}...")
 
@@ -125,9 +112,9 @@ class TranscriptionService:
 
                 subprocess.run(ffmpeg_cmd, check=True)
 
-                # Transcribe the segment
-                result = self.transcribe_audio_segment(segment_path)
-                segment_text = result["text"].strip()
+            # Transcribe the segment
+            result = self.speech_recognition_service.transcribe(segment_path)
+            segment_text = result["text"].strip()
 
             # Add to results
             if segment_text:  # Only add if there's actual transcribed text

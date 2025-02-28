@@ -173,9 +173,11 @@ def generate_learning_cases_text():
     for i, case in enumerate(learning_cases):
         learning_cases_text += (
             f"Case #{i + 1}\n"
-            f"Input:\n{{{json.dumps(case['input'], ensure_ascii=False)}}}\n\n"
+            f"Input:\n"
+            f"```{{{json.dumps(case['input'], ensure_ascii=False)}}}```\n\n"
             f"Expected Output:\n"
-            f"{{{json.dumps(case['expected_output'], ensure_ascii=False)}}}\n"
+            f"```{{{json.dumps(case['expected_output'], ensure_ascii=False)}}}"
+            f"```\n"
         )
 
     return learning_cases_text
@@ -188,11 +190,52 @@ def generate_select_segments_prompt(input_data):
 
     prompt += (
         """
-        ----------
-        # Learning from past errors
-        Here are a couple of cases where mistakes were made in previous
-        outputs, so I am showing the expected output:
-        """
+                        ----------
+                        # Learning from past errors
+                        Here are a couple of cases where mistakes were made in
+                         previous
+                        outputs, so I am showing the expected output:
+                        Example of never combining segments:
+                        Example input:
+                        ```
+                        {{
+                            "start": 8.066,
+                            "end": 10.014,
+                            "text": "Se você está procurando vaga no LinkedIn",
+                        },
+                        {"start": 10.274, "end": 11.262,
+                         "text": "Dessa forma."},
+                        {
+                            "start": 11.458,
+                            "end": 13.15,
+                            "text": "Você está fazendo muito errado.",
+                        }}
+                        ```
+                        NEVER output this:
+                        ```
+                        {{
+                            "start": 8.066,
+                            "end": 10.014,
+                            "text": "Se você está procurando vaga no LinkedIn,
+                            Você está fazendo muito errado.",
+                        }}
+                        ```
+                        The output in this case MUST BE
+                        ```
+                        {{
+                            "start": 8.066,
+                            "end": 10.014,
+                            "text": "Se você está procurando vaga no LinkedIn",
+                        },
+                        {"start": 10.274, "end": 11.262,
+                         "text": "Dessa forma."},
+                        {
+                            "start": 11.458,
+                            "end": 13.15,
+                            "text": "Você está fazendo muito errado.",
+                        }}
+                        ```
+                        """
         + generate_learning_cases_text()
     )
 
@@ -207,10 +250,10 @@ select_segments_based_on_captions_prompt = Prompt(
     a JSON format and the correct caption of the same video in a text format.
 
     Your task:
-    1. Compare the segments with the captions in a chronological order and
-    adjust the segments to perfectly match the captions.
-    2. Do not merge segments. Keep the segments as they are.
-    3. Return the segments in the same order as they are in the input data
+    1. Compare the segments with the captions and adjust the segments to
+    perfectly match the captions.
+    2. Each segment is an object item with text, start and end values.
+    3. DO NOT combine segments.
     4. If there are duplicated segments for the same caption part, keep only
      the last one.
     5. Return the segments in the same JSON structure as the input data
