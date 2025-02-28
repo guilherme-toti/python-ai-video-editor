@@ -101,14 +101,14 @@ class VideoProcessor:
                 segments=transcribed_speech_segments
             )
 
-            # print(f"[6/{STEPS}] Editing video...")
-            # self.video_editor.edit_video(video_path, refined_speech_segments)
-            #
-            # print(f"[7/{STEPS}] Generating social media content...")
-            # self.content_generator.generate_social_media_content(
-            #     video_path=video_path,
-            #     captions=captions,
-            # )
+            print(f"[6/{STEPS}] Editing video...")
+            self.video_editor.edit_video(video_path, refined_speech_segments)
+
+            print(f"[7/{STEPS}] Generating social media content...")
+            self.content_generator.generate_social_media_content(
+                video_path=video_path,
+                captions=captions,
+            )
         except Exception as e:
             import traceback
             print(f"Error in video processing: {str(e)}")

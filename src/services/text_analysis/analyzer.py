@@ -3,7 +3,7 @@ import os
 from typing import List
 
 from src.services.ai.client import AIClient
-from src.prompts.text_analysis import select_segments_based_on_captions_temp_prompt, generate_select_segments_prompt
+from src.prompts.text_analysis import select_segments_based_on_captions_prompt, generate_select_segments_prompt
 from src.utils import get_file_name, read_from_json_file, save_to_file
 
 
@@ -54,7 +54,7 @@ class TextAnalyzerService:
 
         try:
             response = self.ai_service.request(
-                system_prompt=select_segments_based_on_captions_temp_prompt.system_prompt,
+                system_prompt=select_segments_based_on_captions_prompt.system_prompt,
                 user_prompt=generate_select_segments_prompt(data),
                 options=dict(
                     temperature=0.2,
