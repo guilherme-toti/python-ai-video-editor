@@ -9,46 +9,37 @@ from src.utils import get_file_name, check_or_create_folder
 class ProgressManager(Protocol):
     def add_task(
         self, description: str, total_steps: int
-    ) -> Union[None, TaskID]:
-        ...
+    ) -> Union[None, TaskID]: ...
 
-    def update_progress(self, task_id: TaskID, step: int) -> None:
-        ...
+    def update_progress(self, task_id: TaskID, step: int) -> None: ...
 
 
 class AudioExtractor(Protocol):
-    def extract_audio(self, video_path: str) -> str:
-        ...
+    def extract_audio(self, video_path: str) -> str: ...
 
-    def extract_raw_segments(self, audio_path: str) -> List:
-        ...
+    def extract_raw_segments(self, audio_path: str) -> List: ...
 
 
 class Transcriber(Protocol):
-    def transcribe(self, audio_path: str, speech_segments: List) -> List:
-        ...
+    def transcribe(self, audio_path: str, speech_segments: List) -> List: ...
 
 
 class TextAnalyzer(Protocol):
     def refine_speech_segments(
         self, video_path: str, captions: str, segments: List
-    ) -> List:
-        ...
+    ) -> List: ...
 
 
 class VideoEditor(Protocol):
-    def edit_video(self, video_path: str, segments: List) -> str:
-        ...
+    def edit_video(self, video_path: str, segments: List) -> str: ...
 
 
 class ContentGenerator(Protocol):
-    def generate_captions(self, segments: List, video_path: str) -> str:
-        ...
+    def generate_captions(self, segments: List, video_path: str) -> str: ...
 
     def generate_social_media_content(
         self, video_path: str, captions: str
-    ) -> tuple:
-        ...
+    ) -> tuple: ...
 
 
 STEPS = "7"
@@ -65,6 +56,7 @@ class VideoProcessor:
         progress_manager: ProgressManager,
         settings=None,
     ):
+        # Initialize components
         self.audio_extractor = audio_extractor
         self.transcriber = transcriber
         self.text_analyzer = text_analyzer

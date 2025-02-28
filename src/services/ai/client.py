@@ -7,5 +7,4 @@ class AIClient(Protocol):
         system_prompt: str,
         user_prompt: str,
         options: Optional[dict] = None,
-    ) -> str:
-        ...
+    ) -> str: ...

@@ -1,7 +1,7 @@
 repos:
   - repo: https://github.com/psf/black
-    rev: 23.7.0 # You can specify the version you want
+    rev: 25.1.0 # Updated to match local version
     hooks:
       - id: black
         language_version: python3
-        args: ["--config", "pyproject.toml"]
+        args: ["--config", "pyproject.toml", "--verbose"]
