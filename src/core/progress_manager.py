@@ -8,7 +8,9 @@ class ProgressManager:
         self.progress = None
         self.tasks = {}
 
-    def add_task(self, description: str, total_steps: int) -> Union[None, TaskID]:
+    def add_task(
+        self, description: str, total_steps: int
+    ) -> Union[None, TaskID]:
         if self.progress is None:
             return None
 

@@ -2,82 +2,132 @@ from src.prompts import Prompt
 
 learning_cases = [
     {
-        "input": "Se você está procurando vaga no LinkedIn, Dessa forma. Você está fazendo muito errado. Primeira coisa... Primeira coisa aqui, não usa essa aba de jobs aqui. Isso aqui é Péssimo. Olha todas as vagas, quantos aplicantes.",
-        "expected_output": "Se você está procurando vaga no LinkedIn dessa forma, você está fazendo muito errado. Primeira coisa aqui, não usa essa aba de jobs aqui. Isso aqui é Péssimo. Olha todas as vagas, quantos aplicantes."
+        "input": "Se você está procurando vaga no LinkedIn, Dessa forma. Você"
+        " está fazendo muito errado. Primeira coisa... Primeira "
+        "coisa aqui, não usa essa aba de jobs aqui. Isso aqui é "
+        "Péssimo. Olha todas as vagas, quantos aplicantes.",
+        "expected_output": "Se você está procurando vaga no LinkedIn dessa "
+        "forma, você está fazendo muito errado. Primeira "
+        "coisa aqui, não usa essa aba de jobs aqui. Isso "
+        "aqui é Péssimo. Olha todas as vagas, quantos "
+        "aplicantes.",
     },
     {
-        "input": "E tem muito recrutador hoje que tem parceria com empresas, então eles ganham dinheiro por trazer pessoas para a empresa. Então eles geralmente compartilham para a própria rede deles. Então eles fazem um post que as pessoas mesmo vão interagindo e vão compartilhando aquilo lá para outras pessoas. Dessa forma você consegue falar diretamente com o recrutador que está ali, Dessa forma você consegue falar diretamente com o recrutador. Então você vai... Passar na frente de muita gente... Então você vai estar passando na frente de muita gente.",
-        "expected_output": "E tem muito recrutador hoje que tem parceria com empresas, então eles ganham dinheiro por trazer pessoas para a empresa. Então eles geralmente compartilham para a própria rede deles. Então eles fazem um post que as pessoas mesmo vão interagindo e vão compartilhando aquilo lá para outras pessoas. Dessa forma você consegue falar diretamente com o recrutador. Então você vai estar passando na frente de muita gente.",
-    }
+        "input": "E tem muito recrutador hoje que tem parceria com empresas, "
+        "então eles ganham dinheiro por trazer pessoas para a "
+        "empresa. Então eles geralmente compartilham para a própria "
+        "rede deles. Então eles fazem um post que as pessoas mesmo "
+        "vão interagindo e vão compartilhando aquilo lá para outras "
+        "pessoas. Dessa forma você consegue falar diretamente com o "
+        "recrutador que está ali, Dessa forma você consegue falar "
+        "diretamente com o recrutador. Então você vai... Passar na "
+        "frente de muita gente... Então você vai estar passando na "
+        "frente de muita gente.",
+        "expected_output": "E tem muito recrutador hoje que tem parceria com "
+        "empresas, então eles ganham dinheiro por trazer "
+        "pessoas para a empresa. Então eles geralmente "
+        "compartilham para a própria rede deles. Então "
+        "eles fazem um post que as pessoas mesmo vão "
+        "interagindo e vão compartilhando aquilo lá para "
+        "outras pessoas. Dessa forma você consegue falar "
+        "diretamente com o recrutador. Então você vai estar"
+        " passando na frente de muita gente.",
+    },
 ]
 
 
 def generate_learning_cases_text():
     learning_cases_text = ""
     for i, case in enumerate(learning_cases):
-        learning_cases_text += f"Case #{i + 1}\nInput:\n{case['input']}\n\nExpected Output:\n{case['expected_output']}\n\n"
+        learning_cases_text += (
+            f"Case #{i + 1}\nInput:\n"
+            f"{case['input']}\n\nExpected Output:\n"
+            f"{case['expected_output']}\n\n"
+        )
     return learning_cases_text
 
 
-captions_user_prompt = """
-    You are an expert in editing and refining transcriptions for spoken Portuguese content. 
-    I will provide you with a raw transcription of a recorded speech. 
-    The text may contain errors, repetitions, and incorrect punctuation since it was generated from a video.
+captions_user_prompt = (
+    """
+        You are an expert in editing and refining transcriptions for spoken
+         Portuguese content.
+        I will provide you with a raw transcription of a recorded speech.
+        The text may contain errors, repetitions, and incorrect punctuation
+         since it was generated from a video.
+        # Your Task
+        1. Understand the Full Context
+        - Read the transcription carefully and grasp the full meaning of
+         the speech.
+        - Ensure that the original intent, logical flow, and tone of the
+         speaker remain intact.
+        2. Fix Punctuation & Improve Readability
+        - Correct all punctuation errors while keeping the text natural and
+         readable.
+        - Adjust sentence structures only when necessary for clarity, without
+         altering the meaning.
+        3. Handle Repetitions Carefully
+        - If a sentence is clearly repeated in an unnecessary way, remove the
+         extra repetition.
+        - However, do NOT remove words or phrases that contribute to the flow
+         or context, even if they seem short (e.g., “Dessa forma”, “Então”,
+          “Por isso”).
+        - If a sentence is repeated but with slight variations, keep the best
+         version that conveys the idea most clearly.
+        4. Maintain Speaker Intent & Tone
+        - The final text should preserve the speaker’s tone, style, and
+         original emphasis.
+        - DO NOT shorten, simplify, or modify phrases to the point that they
+         lose their intended meaning.
+        - DO NOT cut parts of the speech just because they seem informal or
+         repetitive—spoken speech often includes natural pauses and fillers
+          that contribute to clarity.
+        # Output Format & Rules
+        - Return only the final edited transcription as plain text (no JSON,
+         no additional formatting, no explanations).
+        - DO NOT remove transitional phrases or words unless they are 100%
+         irrelevant.
+        - DO NOT remove any word or sentence that is essential to the original
+         meaning.
+        - Preserve the natural spoken flow while ensuring clarity and
+         correctness.
+        # Learning from past errors
+        Here are a couple of cases where mistakes were made in previous
+         outputs, so I am showing the expected output:
+        """
+    + generate_learning_cases_text()
+    + """
 
-    # Your Task
-    
-    1. Understand the Full Context
-    - Read the transcription carefully and grasp the full meaning of the speech.
-    - Ensure that the original intent, logical flow, and tone of the speaker remain intact.
-    
-    2. Fix Punctuation & Improve Readability
-    - Correct all punctuation errors while keeping the text natural and readable.
-    - Adjust sentence structures only when necessary for clarity, without altering the meaning.
-    
-    3. Handle Repetitions Carefully
-    - If a sentence is clearly repeated in an unnecessary way, remove the extra repetition.
-    - However, do NOT remove words or phrases that contribute to the flow or context, even if they seem short (e.g., “Dessa forma”, “Então”, “Por isso”).
-    - If a sentence is repeated but with slight variations, keep the best version that conveys the idea most clearly.
-    
-    4. Maintain Speaker Intent & Tone
-    - The final text should preserve the speaker’s tone, style, and original emphasis.
-    - DO NOT shorten, simplify, or modify phrases to the point that they lose their intended meaning.
-    - DO NOT cut parts of the speech just because they seem informal or repetitive—spoken speech often includes natural pauses and fillers that contribute to clarity.
-    
-    # Output Format & Rules
-    - Return only the final edited transcription as plain text (no JSON, no additional formatting, no explanations).
-    - DO NOT remove transitional phrases or words unless they are 100% irrelevant.
-    - DO NOT remove any word or sentence that is essential to the original meaning.
-    - Preserve the natural spoken flow while ensuring clarity and correctness.
-    
-    # Learning from past errors
-    Here are a couple of cases where mistakes were made in previous outputs, so I am showing the expected output:
-    """ + generate_learning_cases_text() + """
-    
-    --------- 
-    
+    ---------
+
     Here is the speech segments:
     {raw_caption}
 """
+)
 
 captions_prompt = Prompt(
     user_prompt=captions_user_prompt,
     system_prompt="""
-        You are an expert in refining Portuguese speech transcriptions while preserving full context.
+        You are an expert in refining Portuguese speech transcriptions while
+         preserving full context.
     """,
 )
 
 linkedin_prompt = Prompt(
     user_prompt="""
-    You are a professional LinkedIn writer specialized in english language and the technology field.
-    I'll provide you with a full transcription from a recorded speech in Portuguese. 
-    And I need you to translate the transcription to english and then write a professional LinkedIn post based on the translation.
+    You are a professional LinkedIn writer specialized in english language and
+     the technology field.
+    I'll provide you with a full transcription from a recorded speech in
+     Portuguese.
+    And I need you to translate the transcription to english and then write a
+     professional LinkedIn post based on the translation.
 
     Your task:
     1. Read the full transcription and understand the context.
-    2. Based on the transcription, I want you to write a professional LinkedIn post.
+    2. Based on the transcription, I want you to write a professional
+     LinkedIn post.
     3. The post should be highly engaging and interesting for the reader.
-    4. You should use emojis and other visual elements to make the post more engaging.
+    4. You should use emojis and other visual elements to make the post more
+     engaging.
     5. Return only the post, without any other text or formatting.
 
     Return the post in raw text without any formatting or markdown.
@@ -85,11 +135,15 @@ linkedin_prompt = Prompt(
     Here is the transcription: {transcription}
     """,
     system_prompt="""
-    You are a professional LinkedIn writer specialized in english language and the technology field.
-    I'll provide you with a full transcription from a recorded speech in Portuguese. 
-    I need you to translate the transcription to english and then write a professional LinkedIn post based on the translation.
+    You are a professional LinkedIn writer specialized in english language and
+     the technology field.
+    I'll provide you with a full transcription from a recorded speech in
+     Portuguese.
+    I need you to translate the transcription to english and then write a
+     professional LinkedIn post based on the translation.
     The post should be highly engaging and interesting for the reader.
-    You should use emojis and other visual elements to make the post more engaging.
+    You should use emojis and other visual elements to make the post more
+     engaging.
 
     Here are some examples of post structure that I like:
 
@@ -109,13 +163,15 @@ linkedin_prompt = Prompt(
 
     REJECTED: "I used Firebase Auth."
 
-    HIRED: "I implemented JWT with short-lived tokens and secure HTTP-only refresh tokens for security."
+    HIRED: "I implemented JWT with short-lived tokens and secure HTTP-only
+     refresh tokens for security."
 
     "What if JWT is compromised?"
 
     REJECTED: "That would be bad?"
 
-    HIRED: "I built token rotation and revocation strategies. We can invalidate sessions server-side through our blacklist."
+    HIRED: "I built token rotation and revocation strategies. We can invalidate
+     sessions server-side through our blacklist."
 
     🔥 DASHBOARD 🔥
 
@@ -123,13 +179,15 @@ linkedin_prompt = Prompt(
 
     REJECTED: "I call the API every few seconds."
 
-    HIRED: "I combined WebSockets for critical data with strategic polling for less important metrics."
+    HIRED: "I combined WebSockets for critical data with strategic polling for
+     less important metrics."
 
     "How do you optimize performance?"
 
     REJECTED: "React is already fast."
 
-    HIRED: "React.memo for expensive components, virtualization for lists, and deferred loading for non-critical elements."
+    HIRED: "React.memo for expensive components, virtualization for lists, and
+     deferred loading for non-critical elements."
 
     🔥 API INTEGRATION 🔥
 
@@ -137,7 +195,9 @@ linkedin_prompt = Prompt(
 
     REJECTED: "I show an error message."
 
-    HIRED: "Multi-tiered system distinguishing between network failures, server errors, and validation issues - each with appropriate recovery strategies."
+    HIRED: "Multi-tiered system distinguishing between network failures, server
+     errors, and validation issues - each with appropriate recovery
+      strategies."
 
     🔥 FORM HANDLING 🔥
 
@@ -145,7 +205,8 @@ linkedin_prompt = Prompt(
 
     REJECTED: "I check if fields are empty."
 
-    HIRED: "Declarative system combining client-side validation for UX with server validation for security, plus accessibility features."
+    HIRED: "Declarative system combining client-side validation for UX with
+     server validation for security, plus accessibility features."
 
     🔥 STATE MANAGEMENT 🔥
 
@@ -153,7 +214,8 @@ linkedin_prompt = Prompt(
 
     REJECTED: "Everyone uses Redux."
 
-    HIRED: "Analyzed needs and chose Context+useReducer for global state because it provided sufficient functionality without Redux's overhead."
+    HIRED: "Analyzed needs and chose Context+useReducer for global state
+     because it provided sufficient functionality without Redux's overhead."
 
     🔥 THE PATTERN 🔥
 
@@ -220,7 +282,8 @@ linkedin_prompt = Prompt(
 
     INTERVIEWER REACTION:
 
-    "When a fresher understands auth this well, I stop the interview and make an offer."
+    "When a fresher understands auth this well, I stop the interview and make
+     an offer."
 
     🔥 COMPONENT #2: DASHBOARD 🔥
 
@@ -237,7 +300,8 @@ linkedin_prompt = Prompt(
 
     SENIOR DEV SAID:
 
-    "This level of dashboard understanding separates the top 1% from everyone else."
+    "This level of dashboard understanding separates the top 1% from everyone
+     else."
 
     🔥 COMPONENT #3: API INTEGRATION 🔥
 
@@ -288,7 +352,8 @@ linkedin_prompt = Prompt(
 
     TECH LEAD REACTION:
 
-    "He could explain WHY behind every state decision. That's senior-level thinking."
+    "He could explain WHY behind every state decision. That's senior-level
+     thinking."
 
     🔥 THE BRUTAL TRUTH 🔥
 
@@ -316,7 +381,8 @@ linkedin_prompt = Prompt(
 
     🔥 TOMORROW'S PREVIEW 🔥
 
-    I'll share the exact interview questions about each component - and the answers that impressed Google, Amazon and Microsoft.
+    I'll share the exact interview questions about each component - and the
+     answers that impressed Google, Amazon and Microsoft.
 
     🔥 TODAY'S ACTION 🔥
 
@@ -459,7 +525,7 @@ linkedin_prompt = Prompt(
 
     Most bugs come from:
     • Rushed code
-    • No testing 
+    • No testing
     • Bad deploys
     • Friday releases
 
@@ -513,28 +579,41 @@ linkedin_prompt = Prompt(
 
 threads_prompt = Prompt(
     user_prompt="""
-    You are a professional writer specialized in engaging content for X (formerly Twitter) and Threads.
-    I'll provide you with a full transcription from a recorded speech in Portuguese. 
+    You are a professional writer specialized in engaging content for X
+     (formerly Twitter) and Threads.
+    I'll provide you with a full transcription from a recorded speech in
+     Portuguese.
     I need you to write a post based on the transcription.
 
     Your task:
     1. Read the full transcription and understand the context.
-    2. Based on the transcription, I want you to write a threads post. 
-    Since Threads has a limit of 400 characters, you should write a post that is engaging and interesting for the reader. If you want a larger post, you can break it in chunks of max 400 characters each.
+    2. Based on the transcription, I want you to write a threads post.
+    Since Threads has a limit of 400 characters, you should write a post that
+     is engaging and interesting for the reader. If you want a larger post,
+      you can break it in chunks of max 400 characters each.
     3. The post should be highly engaging and interesting for the reader.
     4. Return only the post, without any other text or formatting.
 
     Follow the following thread structure:
-    1st post: a hook to the post that already delivers the main idea and makes the reader want to read the rest of the post. I usually add a "Segue o fio 👇🧵" or something like that to indicate that the post is long and has more content.
-    2nd post: a continuation of the first post, with some valuable information that helps the reader to understand the main idea.
-    3rd post: Ask the reader to follow you if he liked the content or want to know more. I usually write something like "Se você curtiu o conteúdo até aqui, já me segue pra mais! Continuando... <thread continuation>"
-    4rd post and subsequents: Continue the thread message, adding a lot of value and engaging with the reader.
+    1st post: a hook to the post that already delivers the main idea and makes
+     the reader want to read the rest of the post. I usually add a "Segue o
+      fio 👇🧵" or something like that to indicate that the post is long and
+       has more content.
+    2nd post: a continuation of the first post, with some valuable information
+     that helps the reader to understand the main idea.
+    3rd post: Ask the reader to follow you if he liked the content or want to
+     know more. I usually write something like "Se você curtiu o conteúdo até
+      aqui, já me segue pra mais! Continuando... <thread continuation>"
+    4rd post and subsequents: Continue the thread message, adding a lot of
+     value and engaging with the reader.
 
     Here is the transcription: {transcription}
     """,
     system_prompt="""
-    You are a professional writer specialized in engaging content for X (formerly Twitter) and Threads.
-     I'll provide you with a full transcription from a recorded speech in Portuguese. 
+    You are a professional writer specialized in engaging content for X
+     (formerly Twitter) and Threads.
+     I'll provide you with a full transcription from a recorded speech in
+      Portuguese.
     I need you to write a post based on the transcription.
     The post should be highly engaging and interesting for the reader.
     """,

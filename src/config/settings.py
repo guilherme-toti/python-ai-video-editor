@@ -5,6 +5,7 @@ from dataclasses import dataclass
 @dataclass
 class Settings:
     """Application settings that can be loaded from environment variables"""
+
     raw_dir: str = os.environ.get("RAW_DIR", "data/raw")
     output_dir: str = os.environ.get("OUTPUT_DIR", "data/output")
     temp_dir: str = os.environ.get("TEMP_DIR", "data/temp")

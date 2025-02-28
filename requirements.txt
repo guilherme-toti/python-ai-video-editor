@@ -1,5 +1,4 @@
 openai-whisper
-moviepy
 pytest
 pytest-cov
 torch

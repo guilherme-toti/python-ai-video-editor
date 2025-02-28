@@ -1,39 +1,54 @@
 import os
 from typing import Protocol, List, Union
 
-from rich.progress import TaskID, Progress
+from rich.progress import TaskID
 
 from src.utils import get_file_name, check_or_create_folder
 
 
 class ProgressManager(Protocol):
-    def add_task(self, description: str, total_steps: int) -> Union[None, TaskID]: ...
+    def add_task(
+        self, description: str, total_steps: int
+    ) -> Union[None, TaskID]:
+        ...
 
-    def update_progress(self, task_id: TaskID, step: int) -> None: ...
+    def update_progress(self, task_id: TaskID, step: int) -> None:
+        ...
 
 
 class AudioExtractor(Protocol):
-    def extract_audio(self, video_path: str) -> str: ...
+    def extract_audio(self, video_path: str) -> str:
+        ...
 
-    def extract_raw_segments(self, audio_path: str) -> List: ...
+    def extract_raw_segments(self, audio_path: str) -> List:
+        ...
 
 
 class Transcriber(Protocol):
-    def transcribe(self, audio_path: str, speech_segments: List) -> List: ...
+    def transcribe(self, audio_path: str, speech_segments: List) -> List:
+        ...
 
 
 class TextAnalyzer(Protocol):
-    def refine_speech_segments(self, video_path: str, captions: str, segments: List) -> List: ...
+    def refine_speech_segments(
+        self, video_path: str, captions: str, segments: List
+    ) -> List:
+        ...
 
 
 class VideoEditor(Protocol):
-    def edit_video(self, video_path: str, segments: List) -> str: ...
+    def edit_video(self, video_path: str, segments: List) -> str:
+        ...
 
 
 class ContentGenerator(Protocol):
-    def generate_captions(self, segments: List, video_path: str) -> str: ...
+    def generate_captions(self, segments: List, video_path: str) -> str:
+        ...
 
-    def generate_social_media_content(self, video_path: str, captions: str) -> tuple: ...
+    def generate_social_media_content(
+        self, video_path: str, captions: str
+    ) -> tuple:
+        ...
 
 
 STEPS = "7"
@@ -41,14 +56,14 @@ STEPS = "7"
 
 class VideoProcessor:
     def __init__(
-            self,
-            audio_extractor: AudioExtractor,
-            transcriber: Transcriber,
-            text_analyzer: TextAnalyzer,
-            video_editor: VideoEditor,
-            content_generator: ContentGenerator,
-            progress_manager: ProgressManager,
-            settings=None,
+        self,
+        audio_extractor: AudioExtractor,
+        transcriber: Transcriber,
+        text_analyzer: TextAnalyzer,
+        video_editor: VideoEditor,
+        content_generator: ContentGenerator,
+        progress_manager: ProgressManager,
+        settings=None,
     ):
         self.audio_extractor = audio_extractor
         self.transcriber = transcriber
@@ -67,7 +82,7 @@ class VideoProcessor:
     def process_video(self, video_path: str):
         """
         Process a single video and generate outputs.
-        
+
         Args:
             video_path (str): Path to the video file.
 
@@ -80,25 +95,32 @@ class VideoProcessor:
             self.create_temp_folder(video_path)
 
             print(f"[1/{STEPS}] Extracting audio from video...")
-            audio_path = self.audio_extractor.extract_audio(video_path=video_path)
+            audio_path = self.audio_extractor.extract_audio(
+                video_path=video_path
+            )
 
             print(f"[2/{STEPS}] Extracting raw speech segments...")
-            speech_segments = self.audio_extractor.extract_raw_segments(audio_path)
+            speech_segments = self.audio_extractor.extract_raw_segments(
+                audio_path
+            )
 
             print(f"[3/{STEPS}] Transcribing speech segments...")
-            transcribed_speech_segments = self.transcriber.transcribe(audio_path, speech_segments)
+            transcribed_speech_segments = self.transcriber.transcribe(
+                audio_path, speech_segments
+            )
 
             print(f"[4/{STEPS}] Generating captions...")
             captions = self.content_generator.generate_captions(
-                video_path=video_path,
-                segments=transcribed_speech_segments
+                video_path=video_path, segments=transcribed_speech_segments
             )
 
             print(f"[5/{STEPS}] Refining speech segments...")
-            refined_speech_segments = self.text_analyzer.refine_speech_segments(
-                video_path=video_path,
-                captions=captions,
-                segments=transcribed_speech_segments
+            refined_speech_segments = (
+                self.text_analyzer.refine_speech_segments(
+                    video_path=video_path,
+                    captions=captions,
+                    segments=transcribed_speech_segments,
+                )
             )
 
             print(f"[6/{STEPS}] Editing video...")
@@ -111,6 +133,7 @@ class VideoProcessor:
             )
         except Exception as e:
             import traceback
+
             print(f"Error in video processing: {str(e)}")
             print(traceback.format_exc())
             raise

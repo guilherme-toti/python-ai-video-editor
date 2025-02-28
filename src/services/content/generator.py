@@ -1,7 +1,11 @@
 import os
 from typing import Tuple, List
 
-from src.prompts.content import captions_prompt, linkedin_prompt, threads_prompt
+from src.prompts.content import (
+    captions_prompt,
+    linkedin_prompt,
+    threads_prompt,
+)
 from src.services.ai.client import AIClient
 from src.utils import get_file_name, save_to_file, check_or_create_folder
 
@@ -17,7 +21,9 @@ class ContentGeneratorService:
     def generate_captions(self, segments: List, video_path: str) -> str:
         file_name = get_file_name(video_path)
 
-        content_path = os.path.join(self.settings.temp_dir, file_name, "content")
+        content_path = os.path.join(
+            self.settings.temp_dir, file_name, "content"
+        )
 
         check_or_create_folder(content_path)
 
@@ -29,11 +35,16 @@ class ContentGeneratorService:
                 with open(captions_file_path, "r", encoding="utf-8") as file:
                     captions_text = file.read()
 
-                    print(f"    -> Using previously generated captions from file.")
+                    print(
+                        "    -> Using previously generated captions from file."
+                    )
 
                     return captions_text
             except Exception as e:
-                print(f"    -> Error reading captions from file: {e}. Reprocessing...")
+                print(
+                    f"    -> Error reading captions from file: {e}. "
+                    f"Reprocessing..."
+                )
 
         captions_text = self._generate_captions(segments)
 
@@ -45,14 +56,16 @@ class ContentGeneratorService:
         raw_caption = " ".join([seg["text"] for seg in segments])
 
         response = self.ai_service.request(
-            user_prompt=captions_prompt.user_prompt.format(raw_caption=raw_caption),
+            user_prompt=captions_prompt.user_prompt.format(
+                raw_caption=raw_caption
+            ),
             system_prompt=captions_prompt.system_prompt,
             options=dict(
                 temperature=0,
                 top_p=0.5,
                 frequency_penalty=0.5,
                 response_format={"type": "text"},
-            )
+            ),
         )
 
         return response
@@ -69,8 +82,10 @@ class ContentGeneratorService:
         """
 
         response = self.ai_service.request(
-            user_prompt=linkedin_prompt.user_prompt.format(transcription=transcription),
-            system_prompt=linkedin_prompt.system_prompt
+            user_prompt=linkedin_prompt.user_prompt.format(
+                transcription=transcription
+            ),
+            system_prompt=linkedin_prompt.system_prompt,
         )
 
         file_path = os.path.join(self.output_path, "linkedin.txt")
@@ -89,8 +104,10 @@ class ContentGeneratorService:
             Threads content
         """
         response = self.ai_service.request(
-            user_prompt=threads_prompt.user_prompt.format(transcription=transcription),
-            system_prompt=threads_prompt.system_prompt
+            user_prompt=threads_prompt.user_prompt.format(
+                transcription=transcription
+            ),
+            system_prompt=threads_prompt.system_prompt,
         )
 
         file_path = os.path.join(self.output_path, "threads.txt")
@@ -98,7 +115,9 @@ class ContentGeneratorService:
 
         return response
 
-    def generate_social_media_content(self, video_path: str, captions: str) -> Tuple[str, str]:
+    def generate_social_media_content(
+        self, video_path: str, captions: str
+    ) -> Tuple[str, str]:
         """
         Generate social media content from captions
 

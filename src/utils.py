@@ -55,7 +55,8 @@ def read_from_json_file(file_path: str, expected_type=None) -> List:
 
     Args:
         file_path (str): The path to the file to read.
-        expected_type (type, optional): The expected type of the content. If provided, the content will be cast to this type.
+        expected_type (type, optional): The expected type of the content.
+        If provided, the content will be cast to this type.
 
     Returns:
         str: The content of the file.
@@ -63,7 +64,9 @@ def read_from_json_file(file_path: str, expected_type=None) -> List:
     with open(file_path, "r", encoding="utf-8") as f:
         content = json.loads(f.read())
 
-        if expected_type is not None and not type(content) == expected_type:
+        if expected_type is not None and not isinstance(
+            content, expected_type
+        ):
             raise json.decoder.JSONDecodeError("Invalid content format", "", 0)
 
         return content

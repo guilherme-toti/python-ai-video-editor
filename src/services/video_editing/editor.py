@@ -1,6 +1,6 @@
 import os
+import subprocess
 from typing import List
-from moviepy import VideoFileClip, concatenate_videoclips
 
 from src.utils import get_file_name
 
@@ -14,7 +14,7 @@ class VideoEditorService:
     def edit_video(self, video_path: str, segments: List) -> str:
         """
         Edit video to keep only the selected segments
-        
+
         Args:
             video_path: Path to the video file
             segments: List of segments to keep
@@ -28,19 +28,64 @@ class VideoEditorService:
         # Ensure output directory exists
         os.makedirs(output_dir, exist_ok=True)
 
-        # Load the video
-        video = VideoFileClip(video_path)
+        output_path = os.path.join(
+            output_dir, f"edited_{os.path.basename(video_path)}"
+        )
 
-        clips = [video.subclipped(seg["start"], seg["end"]) for seg in segments]
+        # Create a temporary file for the ffmpeg filter complex script
+        temp_filter_path = os.path.join(output_dir, "filter_script.txt")
 
-        final_clip = concatenate_videoclips(clips)
+        # Build the filter complex for trimming and concatenating segments
+        filter_parts = []
+        segment_parts = []
 
-        output_path = os.path.join(output_dir, f"edited_{os.path.basename(video_path)}")
+        for i, seg in enumerate(segments):
+            # Add a segment trim filter
+            filter_parts.append(
+                f"[0:v]trim=start={seg['start']}:end={seg['end']},"
+                f"setpts=PTS-STARTPTS[v{i}];"
+            )
+            filter_parts.append(
+                f"[0:a]atrim=start={seg['start']}:end={seg['end']},"
+                f"asetpts=PTS-STARTPTS[a{i}];"
+            )
+            segment_parts.append(f"[v{i}][a{i}]")
 
-        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac", logger=None)
+        # Concatenate segments
+        filter_parts.append(
+            f"{' '.join(segment_parts)}concat=n={len(segments)}:"
+            f"v=1:a=1[outv][outa]"
+        )
 
-        # Clean up
-        video.close()
-        final_clip.close()
+        # Write filter complex to file
+        with open(temp_filter_path, "w") as f:
+            f.write("".join(filter_parts))
+
+        # Build and execute ffmpeg command
+        ffmpeg_cmd = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            video_path,
+            "-filter_complex_script",
+            temp_filter_path,
+            "-map",
+            "[outv]",
+            "-map",
+            "[outa]",
+            "-c:v",
+            "libx264",
+            "-c:a",
+            "aac",
+            "-loglevel",
+            "quiet",
+            output_path,
+        ]
+
+        subprocess.run(ffmpeg_cmd, check=True)
+
+        # Clean up the temporary filter script
+        if os.path.exists(temp_filter_path):
+            os.remove(temp_filter_path)
 
         return output_path

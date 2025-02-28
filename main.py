@@ -1,3 +1,4 @@
+import sys
 import os
 import traceback
 
@@ -13,6 +14,8 @@ from src.services.content.generator import ContentGeneratorService
 
 
 def main():
+    sys.stderr = open(os.devnull, "w")
+
     # Load settings
     settings = Settings()
 
@@ -20,9 +23,13 @@ def main():
     ai_service = OpenAI()
     audio_extractor = AudioExtractorService(settings)
     transcriber = TranscriptionService(settings)
-    text_analyzer = TextAnalyzerService(settings=settings, ai_service=ai_service)
+    text_analyzer = TextAnalyzerService(
+        settings=settings, ai_service=ai_service
+    )
     video_editor = VideoEditorService(settings)
-    content_generator = ContentGeneratorService(settings=settings, ai_service=ai_service)
+    content_generator = ContentGeneratorService(
+        settings=settings, ai_service=ai_service
+    )
     progress_manager = ProgressManager()
 
     # Create the video processor with all dependencies
@@ -33,7 +40,7 @@ def main():
         video_editor=video_editor,
         content_generator=content_generator,
         settings=settings,
-        progress_manager=progress_manager
+        progress_manager=progress_manager,
     )
 
     # Process all videos
