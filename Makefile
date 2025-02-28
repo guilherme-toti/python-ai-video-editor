@@ -25,6 +25,7 @@ $(VENV_DIR):
 install: requirements.txt
 	$(PIP) install --upgrade pip
 	$(PIP) install -r requirements.txt
+	pre-commit install
 	@echo "Dependencies installed"
 
 env:
