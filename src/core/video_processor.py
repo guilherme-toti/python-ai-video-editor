@@ -101,28 +101,28 @@ class VideoProcessor:
                 audio_path, speech_segments
             )
 
-            print(f"[4/{STEPS}] Generating captions...")
-            captions = self.content_generator.generate_captions(
-                video_path=video_path, segments=transcribed_speech_segments
-            )
-
-            print(f"[5/{STEPS}] Refining speech segments...")
-            refined_speech_segments = (
-                self.text_analyzer.refine_speech_segments(
-                    video_path=video_path,
-                    captions=captions,
-                    segments=transcribed_speech_segments,
-                )
-            )
-
-            print(f"[6/{STEPS}] Editing video...")
-            self.video_editor.edit_video(video_path, refined_speech_segments)
-
-            print(f"[7/{STEPS}] Generating social media content...")
-            self.content_generator.generate_social_media_content(
-                video_path=video_path,
-                captions=captions,
-            )
+            # print(f"[4/{STEPS}] Generating captions...")
+            # captions = self.content_generator.generate_captions(
+            #     video_path=video_path, segments=transcribed_speech_segments
+            # )
+            #
+            # print(f"[5/{STEPS}] Refining speech segments...")
+            # refined_speech_segments = (
+            #     self.text_analyzer.refine_speech_segments(
+            #         video_path=video_path,
+            #         captions=captions,
+            #         segments=transcribed_speech_segments,
+            #     )
+            # )
+            #
+            # print(f"[6/{STEPS}] Editing video...")
+            # self.video_editor.edit_video(video_path, refined_speech_segments)
+            #
+            # print(f"[7/{STEPS}] Generating social media content...")
+            # self.content_generator.generate_social_media_content(
+            #     video_path=video_path,
+            #     captions=captions,
+            # )
         except Exception as e:
             import traceback
 

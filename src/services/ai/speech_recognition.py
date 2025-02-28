@@ -1,11 +1,8 @@
+from typing import List
+from concurrent.futures import ThreadPoolExecutor
+
 import torch
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
-
-INITIAL_PROMPT = (
-    "Eu falo sobre tecnologia, programação e trabalho remoto. "
-    "Meu nicho principal é ajudar desenvolvedores de software a"
-    " conquistar seu primeiro trabalho remoto para o exterior."
-)
 
 
 class SpeechRecognition:
@@ -19,8 +16,7 @@ class SpeechRecognition:
 
         self.model = AutoModelForSpeechSeq2Seq.from_pretrained(
             model_id, torch_dtype=torch_dtype, use_safetensors=True
-        )
-        self.model.to(device)
+        ).to(device)
 
         self.processor = AutoProcessor.from_pretrained(model_id)
 
@@ -34,7 +30,7 @@ class SpeechRecognition:
             model_kwargs={"use_cache": True},
         )
 
-    def transcribe(self, audio_path: str) -> dict:
+    def get_audio_transcription(self, audio_path: str) -> dict:
         try:
             response = self.whisper_pipeline(
                 audio_path,
@@ -47,5 +43,13 @@ class SpeechRecognition:
 
             return response
         except Exception as e:
-            print(f"Error transcribing segment: {e}")
+            print(f"Error transcribing segment: {audio_path}. Error: {e}")
             return {"text": ""}
+
+    def transcribe(self, audio_segments_path: List) -> List:
+        with ThreadPoolExecutor() as executor:
+            results = list(
+                executor.map(self.get_audio_transcription, audio_segments_path)
+            )
+
+        return results

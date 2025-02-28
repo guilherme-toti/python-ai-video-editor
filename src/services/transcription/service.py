@@ -71,12 +71,14 @@ class TranscriptionService:
 
         # Process each speech segment
         total_segments = len(speech_segments)
+        audio_segments_path = []
         for i, segment in enumerate(speech_segments):
             start_time = segment["start"]
             end_time = segment["end"]
 
             # Define segment path
             segment_path = os.path.join(self.folder_path, f"{i}.mp3")
+            audio_segments_path.append(segment_path)
 
             # Check if segment file already exists
             if os.path.exists(segment_path):
@@ -86,7 +88,9 @@ class TranscriptionService:
                 )
             else:
                 # Extract the segment audio using ffmpeg
-                print(f"    -> Transcribing segment {i}/{total_segments}...")
+                print(
+                    f"    -> Extracting audio segment {i}/{total_segments}..."
+                )
 
                 # Calculate duration in seconds
                 duration = end_time - start_time
@@ -112,18 +116,35 @@ class TranscriptionService:
 
                 subprocess.run(ffmpeg_cmd, check=True)
 
-            # Transcribe the segment
-            result = self.speech_recognition_service.transcribe(segment_path)
+        # # Transcribe the segments
+        transcription = self.speech_recognition_service.transcribe(
+            audio_segments_path
+        )
+
+        if not len(transcription) == len(speech_segments):
+            raise ValueError(
+                "Transcription length does not match speech segments length."
+            )
+
+        for i, segment in enumerate(speech_segments):
+            start_time = segment["start"]
+            end_time = segment["end"]
+
+            # Get the transcription result
+            result = transcription[i]
             segment_text = result["text"].strip()
 
             # Add to results
-            if segment_text:  # Only add if there's actual transcribed text
-                transcribed_segment = {
-                    "start": start_time,
-                    "end": end_time,
-                    "text": segment_text,
-                }
-                transcribed_segments.append(transcribed_segment)
+            if not segment_text:
+                continue
+
+            transcribed_segment = {
+                "start": start_time,
+                "end": end_time,
+                "text": segment_text,
+            }
+
+            transcribed_segments.append(transcribed_segment)
 
         save_to_file(
             speech_segments_file_path,
