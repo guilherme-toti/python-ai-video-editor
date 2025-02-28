@@ -53,5 +53,5 @@ format:
 		echo "black is not installed. Installing..."; \
 		$(PIP) install black; \
 	fi
-	$(PYTHON) -m black $(SRC_DIR)
+	$(PYTHON) -m black --config pyproject.toml $(SRC_DIR)
 	@echo "Black formatting complete."
