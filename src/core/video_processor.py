@@ -93,6 +93,12 @@ class VideoProcessor:
 
         check_or_create_folder(folder_path)
 
+    def delete_temp_folder(self, video_path: str):
+        file_name = get_file_name(video_path)
+        folder_path = os.path.join(self.settings.temp_dir, file_name)
+
+        os.system(f"rm -r {folder_path}")
+
     def process_video(self, video_path: str):
         """
         Process a single video and generate outputs.
@@ -154,6 +160,8 @@ class VideoProcessor:
                     captions=captions,
                     progress_manager=progress_manager,
                 )
+
+                self.delete_temp_folder(video_path)
             except Exception as e:
                 import traceback
 
