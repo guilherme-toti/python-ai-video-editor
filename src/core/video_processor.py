@@ -46,7 +46,7 @@ class TextAnalyzer(Protocol):
 class VideoEditor(Protocol):
     def edit_video(
         self, video_path: str, segments: List, progress_manager: Progress
-    ) -> str: ...
+    ) -> None: ...
 
 
 class ContentGenerator(Protocol):
@@ -162,3 +162,7 @@ class VideoProcessor:
                 raise
 
         os.system('cls' if os.name == 'nt' else 'clear')
+
+        text = Text(f"Finished processing: {video_path} ✅")
+        text.stylize("bold green")
+        console.print(text)

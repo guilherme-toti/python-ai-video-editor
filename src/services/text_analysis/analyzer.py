@@ -60,9 +60,7 @@ class TextAnalyzerService:
                     refined_speech_segments_path, expected_type=list
                 )
 
-                progress_manager.update(
-                    progress_task, advance=1, visible=False
-                )
+                progress_manager.update(progress_task, advance=1)
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
@@ -87,7 +85,7 @@ class TextAnalyzerService:
                 json.dumps(response_obj, ensure_ascii=False, indent=2),
             )
 
-            progress_manager.update(progress_task, advance=1, visible=False)
+            progress_manager.update(progress_task, advance=1)
 
             return response_obj
         except json.JSONDecodeError:

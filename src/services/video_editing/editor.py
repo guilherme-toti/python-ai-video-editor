@@ -15,7 +15,7 @@ class VideoEditorService:
         self.settings = settings
 
     @staticmethod
-    def get_segments_duration(segments: List):
+    def get_segments_duration(segments: List) -> float:
         """Calculate the total duration of the segments."""
         return float(sum(seg["end"] - seg["start"] for seg in segments))
 
@@ -133,6 +133,4 @@ class VideoEditorService:
         if os.path.exists(temp_filter_path):
             os.remove(temp_filter_path)
 
-        progress_manager.update(
-            progress_task, completed=total_duration, visible=False
-        )
+        progress_manager.update(progress_task, completed=total_duration)

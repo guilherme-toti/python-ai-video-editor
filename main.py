@@ -48,7 +48,6 @@ def main():
         video_path = os.path.join(settings.raw_dir, video_file)
         try:
             processor.process_video(video_path)
-            print(f"Successfully processed {video_file}")
         except Exception as e:
             traceback.print_exc()
             print(f"Error processing {video_file}: {str(e)}")

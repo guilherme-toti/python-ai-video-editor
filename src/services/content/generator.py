@@ -44,9 +44,7 @@ class ContentGeneratorService:
                 with open(captions_file_path, "r", encoding="utf-8") as file:
                     captions_text = file.read()
 
-                    progress_manager.update(
-                        progress_task, advance=1, visible=False
-                    )
+                    progress_manager.update(progress_task, advance=1)
 
                     return captions_text
             except Exception:
@@ -56,7 +54,7 @@ class ContentGeneratorService:
 
         save_to_file(captions_file_path, captions_text)
 
-        progress_manager.update(progress_task, advance=1, visible=False)
+        progress_manager.update(progress_task, advance=1)
 
         return captions_text
 
@@ -106,7 +104,7 @@ class ContentGeneratorService:
         file_path = os.path.join(self.output_path, "linkedin.txt")
         save_to_file(file_path, response)
 
-        progress_manager.update(progress_task, advance=1, visible=False)
+        progress_manager.update(progress_task, advance=1)
 
         return response
 
@@ -137,7 +135,7 @@ class ContentGeneratorService:
         file_path = os.path.join(self.output_path, "threads.txt")
         save_to_file(file_path, response)
 
-        progress_manager.update(progress_task, advance=1, visible=False)
+        progress_manager.update(progress_task, advance=1)
 
         return response
 

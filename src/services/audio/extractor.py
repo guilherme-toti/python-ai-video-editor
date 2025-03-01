@@ -67,7 +67,7 @@ class AudioExtractorService:
 
         # Check if audio has already been extracted
         if os.path.exists(audio_path):
-            progress_manager.update(progress_task, advance=1, visible=False)
+            progress_manager.update(progress_task, advance=1)
 
             return audio_path
 
@@ -91,7 +91,7 @@ class AudioExtractorService:
 
         subprocess.run(ffmpeg_cmd, check=True)
 
-        progress_manager.update(progress_task, advance=1, visible=False)
+        progress_manager.update(progress_task, advance=1)
 
         return audio_path
 
@@ -127,9 +127,7 @@ class AudioExtractorService:
                     raw_speech_segments_file_path, expected_type=list
                 )
 
-                progress_manager.update(
-                    progress_task, advance=1, visible=False
-                )
+                progress_manager.update(progress_task, advance=1)
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
@@ -162,7 +160,7 @@ class AudioExtractorService:
             segment = {"start": start_sec, "end": end_sec}
             segments.append(segment)
 
-            progress_manager.update(progress_task, advance=1, visible=False)
+            progress_manager.update(progress_task, advance=1)
 
         save_to_file(
             raw_speech_segments_file_path,

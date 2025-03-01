@@ -66,9 +66,7 @@ class TranscriptionService:
                     file_path=speech_segments_file_path, expected_type=list
                 )
 
-                progress_manager.update(
-                    generate_audio_task, completed=1, visible=False
-                )
+                progress_manager.update(generate_audio_task, completed=1)
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
@@ -166,6 +164,6 @@ class TranscriptionService:
             json.dumps(transcribed_segments, ensure_ascii=False, indent=2),
         )
 
-        progress_manager.update(generate_audio_task, visible=False)
+        progress_manager.update(generate_audio_task)
 
         return transcribed_segments
