@@ -3,6 +3,8 @@ import os
 import subprocess
 from typing import List
 
+from rich.progress import Progress
+
 from src.services.ai.speech_recognition import SpeechRecognition
 from src.utils import (
     get_file_name,
@@ -20,20 +22,30 @@ class TranscriptionService:
         self.folder_path: str = ""
         self.speech_recognition_service = None
 
-    def transcribe(self, audio_path: str, speech_segments: List) -> List:
+    def transcribe(
+        self,
+        audio_path: str,
+        speech_segments: List,
+        progress_manager: Progress,
+    ) -> List:
         """
         Transcribe speech segments from audio
 
         Args:
             audio_path: Path to the audio file
             speech_segments: list containing speech segments
+            progress_manager: Progress manager instance
 
         Returns:
             List containing the full transcription text and segments
         """
-
         if not os.path.exists(audio_path):
             raise FileNotFoundError(f"Audio file not found: {audio_path}")
+
+        generate_audio_task = progress_manager.add_task(
+            description="[green]Generating transcription audio files...",
+            start=False,
+        )
 
         file_name = get_file_name(audio_path)
 
@@ -46,19 +58,22 @@ class TranscriptionService:
         )
 
         if os.path.exists(speech_segments_file_path):
+            progress_manager.update(generate_audio_task, total=1)
+            progress_manager.start_task(generate_audio_task)
+
             try:
                 speech_segments = read_from_json_file(
                     file_path=speech_segments_file_path, expected_type=list
                 )
 
-                print("    -> Using previously transcribed speech segments.")
+                progress_manager.update(
+                    generate_audio_task, completed=1, visible=False
+                )
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
-                print(
-                    "    -> Error reading transcribed speech segments from "
-                    "file. Reprocessing..."
-                )
+                progress_manager.reset(generate_audio_task)
+                pass
 
         self.folder_path = os.path.join(temp_audio_path, "segments")
 
@@ -72,6 +87,10 @@ class TranscriptionService:
         # Process each speech segment
         total_segments = len(speech_segments)
         audio_segments_path = []
+
+        progress_manager.update(generate_audio_task, total=total_segments)
+        progress_manager.start_task(generate_audio_task)
+
         for i, segment in enumerate(speech_segments):
             start_time = segment["start"]
             end_time = segment["end"]
@@ -82,16 +101,9 @@ class TranscriptionService:
 
             # Check if segment file already exists
             if os.path.exists(segment_path):
-                print(
-                    "    -> Using existing segment file: "
-                    f"{i}/{total_segments}..."
-                )
+                progress_manager.update(generate_audio_task, advance=1)
             else:
                 # Extract the segment audio using ffmpeg
-                print(
-                    f"    -> Extracting audio segment {i}/{total_segments}..."
-                )
-
                 # Calculate duration in seconds
                 duration = end_time - start_time
 
@@ -116,9 +128,12 @@ class TranscriptionService:
 
                 subprocess.run(ffmpeg_cmd, check=True)
 
-        # # Transcribe the segments
+                progress_manager.update(generate_audio_task, advance=1)
+
+        # Transcribe the segments
         transcription = self.speech_recognition_service.transcribe(
-            audio_segments_path
+            audio_segments_path,
+            progress_manager=progress_manager,
         )
 
         if not len(transcription) == len(speech_segments):
@@ -150,5 +165,7 @@ class TranscriptionService:
             speech_segments_file_path,
             json.dumps(transcribed_segments, ensure_ascii=False, indent=2),
         )
+
+        progress_manager.update(generate_audio_task, visible=False)
 
         return transcribed_segments

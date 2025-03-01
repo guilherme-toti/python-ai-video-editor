@@ -5,6 +5,7 @@ from typing import List
 
 import torchaudio
 import torch
+from rich.progress import Progress
 
 from src.utils import (
     get_file_name,
@@ -36,18 +37,25 @@ class AudioExtractorService:
             _,
         ) = utils
 
-    def extract_audio(self, video_path: str) -> str:
+    def extract_audio(
+        self, video_path: str, progress_manager: Progress
+    ) -> str:
         """
         Extract audio from a video file using ffmpeg
 
         Args:
             video_path: Path to the video file
+            progress_manager: Progress instance to update progress
 
         Returns:
             Path to the extracted audio file
         """
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
+
+        progress_task = progress_manager.add_task(
+            description="[green]Extracting audio...", total=1
+        )
 
         self.file_name = get_file_name(video_path)
         self.folder_path = os.path.join(
@@ -59,7 +67,8 @@ class AudioExtractorService:
 
         # Check if audio has already been extracted
         if os.path.exists(audio_path):
-            print("    -> Using previously extracted audio.")
+            progress_manager.update(progress_task, advance=1, visible=False)
+
             return audio_path
 
         check_or_create_folder(self.folder_path)
@@ -82,36 +91,49 @@ class AudioExtractorService:
 
         subprocess.run(ffmpeg_cmd, check=True)
 
+        progress_manager.update(progress_task, advance=1, visible=False)
+
         return audio_path
 
-    def extract_raw_segments(self, audio_path: str) -> List:
+    def extract_raw_segments(
+        self, audio_path: str, progress_manager: Progress
+    ) -> List:
         """
         Extract speech segments from an audio file
 
         Args:
             audio_path: Path to the audio file
+            progress_manager: Progress instance to update progress
 
         Returns:
             JSON string containing speech segments
         """
+
+        progress_task = progress_manager.add_task(
+            description="[green]Extracting raw speech segments...",
+            start=False,
+        )
+
         raw_speech_segments_file_path = os.path.join(
             self.folder_path, "raw_speech_segments.json"
         )
 
         if os.path.exists(raw_speech_segments_file_path):
             try:
+                progress_manager.update(progress_task, total=1)
+                progress_manager.start_task(progress_task)
+
                 speech_segments = read_from_json_file(
                     raw_speech_segments_file_path, expected_type=list
                 )
 
-                print("    -> Using previously extracted raw speech segments.")
+                progress_manager.update(
+                    progress_task, advance=1, visible=False
+                )
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
-                print(
-                    "    -> Error reading raw speech segments from file. "
-                    "Reprocessing..."
-                )
+                pass
 
         # Load audio using torchaudio
         wav, sr = torchaudio.load(audio_path)
@@ -130,12 +152,17 @@ class AudioExtractorService:
             wav, self.model, sampling_rate=16000
         )
 
+        progress_manager.update(progress_task, total=len(speech_timestamps))
+        progress_manager.start_task(progress_task)
+
         segments = []
         for ts in speech_timestamps:
             start_sec = ts["start"] / 16000  # Convert from samples to seconds
             end_sec = ts["end"] / 16000  # Convert from samples to seconds
             segment = {"start": start_sec, "end": end_sec}
             segments.append(segment)
+
+            progress_manager.update(progress_task, advance=1, visible=False)
 
         save_to_file(
             raw_speech_segments_file_path,

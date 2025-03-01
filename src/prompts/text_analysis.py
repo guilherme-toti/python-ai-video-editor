@@ -177,7 +177,7 @@ def generate_learning_cases_text():
             f"```{{{json.dumps(case['input'], ensure_ascii=False)}}}```\n\n"
             f"Expected Output:\n"
             f"```{{{json.dumps(case['expected_output'], ensure_ascii=False)}}}"
-            f"```\n"
+            f"```\n---------------\n"
         )
 
     return learning_cases_text
@@ -191,11 +191,10 @@ def generate_select_segments_prompt(input_data):
     prompt += (
         """
                         ----------
-                        # Learning from past errors
+                        # Learn from past errors
                         Here are a couple of cases where mistakes were made in
-                         previous
-                        outputs, so I am showing the expected output:
-                        Example of never combining segments:
+                         previous outputs:
+
                         Example input:
                         ```
                         {{
@@ -235,6 +234,7 @@ def generate_select_segments_prompt(input_data):
                             "text": "Você está fazendo muito errado.",
                         }}
                         ```
+                        ----------
                         """
         + generate_learning_cases_text()
     )
@@ -244,22 +244,18 @@ def generate_select_segments_prompt(input_data):
 
 select_segments_based_on_captions_prompt = Prompt(
     user_prompt="""
-    You are an expert in editing and refining transcriptions for spoken
-    Portuguese content.
     I'll provide you speech segments from a recorded video in Portuguese in
     a JSON format and the correct caption of the same video in a text format.
-
-    Your task:
-    1. Compare the segments with the captions and adjust the segments to
-    perfectly match the captions.
-    2. Each segment is an object item with text, start and end values.
+    Context:
+    1. Each segment is an object item with text, start and end values.
     3. DO NOT combine segments.
-    4. If there are duplicated segments for the same caption part, keep only
+    Your task:
+    1. Go through each segment and compare with the captions, removing the
+     segments that are not part of the captions.
+    2. If there are duplicated segments for the same caption part, keep only
      the last one.
-    5. Return the segments in the same JSON structure as the input data
-
+    3. Return the segments in the same JSON structure as the input data
     Output only valid JSON with no explanations.
-
     Input data:
     {input_data}
     """,

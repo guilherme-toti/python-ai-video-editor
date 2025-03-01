@@ -3,7 +3,6 @@ import os
 import traceback
 
 from src.config.settings import Settings
-from src.core.progress_manager import ProgressManager
 from src.core.video_processor import VideoProcessor
 from src.services.ai.openai import OpenAI
 from src.services.audio.extractor import AudioExtractorService
@@ -30,7 +29,6 @@ def main():
     content_generator = ContentGeneratorService(
         settings=settings, ai_service=ai_service
     )
-    progress_manager = ProgressManager()
 
     # Create the video processor with all dependencies
     processor = VideoProcessor(
@@ -40,7 +38,6 @@ def main():
         video_editor=video_editor,
         content_generator=content_generator,
         settings=settings,
-        progress_manager=progress_manager,
     )
 
     # Process all videos

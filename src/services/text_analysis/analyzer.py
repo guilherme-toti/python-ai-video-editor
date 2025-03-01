@@ -2,6 +2,8 @@ import json
 import os
 from typing import List
 
+from rich.progress import Progress
+
 from src.services.ai.client import AIClient
 from src.prompts.text_analysis import (
     select_segments_based_on_captions_prompt as captions_prompt,
@@ -18,7 +20,11 @@ class TextAnalyzerService:
         self.ai_service = ai_service
 
     def refine_speech_segments(
-        self, video_path: str, captions: str, segments: List
+        self,
+        video_path: str,
+        captions: str,
+        segments: List,
+        progress_manager: Progress,
     ) -> List:
         """
         Analyze and refine text, deciding which segments to keep
@@ -27,12 +33,18 @@ class TextAnalyzerService:
             video_path: Path to the video file
             captions: Full captions in a string format
             segments: List of speech segments
+            progress_manager: Progress manager for updating progress
 
         Returns:
             List of segments to keep
         """
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
+
+        progress_task = progress_manager.add_task(
+            description="[blue]Refining speech segments...",
+            total=1,
+        )
 
         file_name = get_file_name(video_path)
         refined_speech_segments_path = os.path.join(
@@ -48,14 +60,13 @@ class TextAnalyzerService:
                     refined_speech_segments_path, expected_type=list
                 )
 
-                print("    -> Using previously refined speech segments.")
+                progress_manager.update(
+                    progress_task, advance=1, visible=False
+                )
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
-                print(
-                    "    -> Error reading refined speech segments from file. "
-                    "Reprocessing..."
-                )
+                pass
 
         data = {"captions": captions, "segments": segments}
 
@@ -75,6 +86,8 @@ class TextAnalyzerService:
                 refined_speech_segments_path,
                 json.dumps(response_obj, ensure_ascii=False, indent=2),
             )
+
+            progress_manager.update(progress_task, advance=1, visible=False)
 
             return response_obj
         except json.JSONDecodeError:

@@ -1,6 +1,8 @@
 import os
 from typing import Tuple, List
 
+from rich.progress import Progress
+
 from src.prompts.content import (
     captions_prompt,
     linkedin_prompt,
@@ -18,7 +20,14 @@ class ContentGeneratorService:
         self.ai_service = ai_service
         self.output_path: str = ""
 
-    def generate_captions(self, segments: List, video_path: str) -> str:
+    def generate_captions(
+        self, segments: List, video_path: str, progress_manager: Progress
+    ) -> str:
+        progress_task = progress_manager.add_task(
+            description="[blue]Generating captions...",
+            total=1,
+        )
+
         file_name = get_file_name(video_path)
 
         content_path = os.path.join(
@@ -35,20 +44,19 @@ class ContentGeneratorService:
                 with open(captions_file_path, "r", encoding="utf-8") as file:
                     captions_text = file.read()
 
-                    print(
-                        "    -> Using previously generated captions from file."
+                    progress_manager.update(
+                        progress_task, advance=1, visible=False
                     )
 
                     return captions_text
-            except Exception as e:
-                print(
-                    f"    -> Error reading captions from file: {e}. "
-                    f"Reprocessing..."
-                )
+            except Exception:
+                pass
 
         captions_text = self._generate_captions(segments)
 
         save_to_file(captions_file_path, captions_text)
+
+        progress_manager.update(progress_task, advance=1, visible=False)
 
         return captions_text
 
@@ -70,16 +78,23 @@ class ContentGeneratorService:
 
         return response
 
-    def generate_linkedin_content(self, transcription):
+    def generate_linkedin_content(
+        self, transcription, progress_manager: Progress
+    ):
         """
         Generate LinkedIn content based on transcription
 
         Args:
             transcription: Transcription text
+            progress_manager: Progress manager to track progress
 
         Returns:
             LinkedIn content
         """
+        progress_task = progress_manager.add_task(
+            description="[blue]Generating LinkedIn post...",
+            total=1,
+        )
 
         response = self.ai_service.request(
             user_prompt=linkedin_prompt.user_prompt.format(
@@ -91,9 +106,13 @@ class ContentGeneratorService:
         file_path = os.path.join(self.output_path, "linkedin.txt")
         save_to_file(file_path, response)
 
+        progress_manager.update(progress_task, advance=1, visible=False)
+
         return response
 
-    def generate_threads_content(self, transcription):
+    def generate_threads_content(
+        self, transcription, progress_manager: Progress
+    ):
         """
         Generate Threads content based on transcription
 
@@ -103,6 +122,11 @@ class ContentGeneratorService:
         Returns:
             Threads content
         """
+        progress_task = progress_manager.add_task(
+            description="[blue]Generating Threads posts...",
+            total=1,
+        )
+
         response = self.ai_service.request(
             user_prompt=threads_prompt.user_prompt.format(
                 transcription=transcription
@@ -113,10 +137,12 @@ class ContentGeneratorService:
         file_path = os.path.join(self.output_path, "threads.txt")
         save_to_file(file_path, response)
 
+        progress_manager.update(progress_task, advance=1, visible=False)
+
         return response
 
     def generate_social_media_content(
-        self, video_path: str, captions: str
+        self, video_path: str, captions: str, progress_manager: Progress
     ) -> Tuple[str, str]:
         """
         Generate social media content from captions
@@ -134,7 +160,11 @@ class ContentGeneratorService:
 
         check_or_create_folder(self.output_path)
 
-        linkedin_content = self.generate_linkedin_content(captions)
-        threads_content = self.generate_threads_content(captions)
+        linkedin_content = self.generate_linkedin_content(
+            captions, progress_manager=progress_manager
+        )
+        threads_content = self.generate_threads_content(
+            captions, progress_manager=progress_manager
+        )
 
         return linkedin_content, threads_content
