@@ -44,6 +44,8 @@ class VideoEditorService:
             total=total_duration,
         )
 
+        print("    -> Editing video...")
+
         file_name = get_file_name(video_path)
         output_dir = os.path.join(self.settings.output_dir, file_name)
 
@@ -72,8 +74,8 @@ class VideoEditorService:
                 f"asetpts=PTS-STARTPTS[a{i}];"
             )
             segment_parts.append(f"[v{i}][a{i}]")
-        #
-        # # Concatenate segments
+
+        # Concatenate segments
         filter_parts.append(
             f"{' '.join(segment_parts)}concat=n={len(segments)}:"
             f"v=1:a=1[outv][outa]"
@@ -133,4 +135,8 @@ class VideoEditorService:
         if os.path.exists(temp_filter_path):
             os.remove(temp_filter_path)
 
-        progress_manager.update(progress_task, completed=total_duration)
+        progress_manager.update(
+            progress_task, completed=total_duration, visible=False
+        )
+
+        print("      -> Video edited.")

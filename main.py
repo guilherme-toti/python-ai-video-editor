@@ -5,11 +5,11 @@ import traceback
 from src.config.settings import Settings
 from src.core.video_processor import VideoProcessor
 from src.services.ai.openai import OpenAI
-from src.services.audio.extractor import AudioExtractorService
-from src.services.transcription.service import TranscriptionService
-from src.services.text_analysis.analyzer import TextAnalyzerService
-from src.services.video_editing.editor import VideoEditorService
-from src.services.content.generator import ContentGeneratorService
+from src.services.audio.audio_extractor import AudioExtractorService
+from src.services.transcription.transcriber import TranscriptionService
+from src.services.text_analysis.text_analyzer import TextAnalyzerService
+from src.services.video_editing.video_editor import VideoEditorService
+from src.services.content.content_generator import ContentGeneratorService
 
 
 def main():
@@ -43,6 +43,7 @@ def main():
     # Process all videos
     for video_file in os.listdir(settings.raw_dir):
         if not video_file.lower().endswith(settings.video_formats):
+            print("There is no video file to process.")
             continue
 
         video_path = os.path.join(settings.raw_dir, video_file)

@@ -1,6 +1,20 @@
 from typing import Union
 
-from rich.progress import TaskID
+from rich.progress import (
+    Progress,
+    SpinnerColumn,
+    TextColumn,
+    TaskProgressColumn,
+    BarColumn,
+    TaskID,
+)
+
+progress_object = Progress(
+    SpinnerColumn(),
+    TextColumn("[progress.description]{task.description}"),
+    BarColumn(),
+    TaskProgressColumn(),
+)
 
 
 class ProgressManager:

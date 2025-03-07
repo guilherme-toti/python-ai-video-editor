@@ -1,10 +1,8 @@
 from concurrent.futures import ThreadPoolExecutor
-from functools import partial
 from typing import List
 import warnings
 
 import torch
-from rich.progress import Progress
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -20,7 +18,9 @@ class SpeechRecognition:
         model_id = "openai/whisper-large-v3"
 
         self.model = AutoModelForSpeechSeq2Seq.from_pretrained(
-            model_id, torch_dtype=torch_dtype, use_safetensors=True
+            model_id,
+            torch_dtype=torch_dtype,
+            use_safetensors=True,
         ).to(device)
 
         self.processor = AutoProcessor.from_pretrained(model_id)
@@ -35,9 +35,7 @@ class SpeechRecognition:
             model_kwargs={"use_cache": True},
         )
 
-    def get_audio_transcription(
-        self, audio_path: str, update_progress
-    ) -> dict:
+    def get_audio_transcription(self, audio_path: str) -> dict:
         try:
             response = self.whisper_pipeline(
                 audio_path,
@@ -45,38 +43,22 @@ class SpeechRecognition:
                 generate_kwargs={
                     "language": "portuguese",
                     "task": "transcribe",
+                    "temperature": 0.0,
                 },
             )
-
-            update_progress()
 
             return response
         except Exception as e:
             print(f"Error transcribing segment: {audio_path}. Error: {e}")
 
-            update_progress()
-
             return {"text": ""}
 
-    def transcribe(
-        self, audio_segments_path: List, progress_manager: Progress
-    ) -> List:
-        transcribe_audio_task = progress_manager.add_task(
-            description="[green]Transcribing speech segments...",
-            total=len(audio_segments_path),
-        )
-
-        def update_progress():
-            progress_manager.update(transcribe_audio_task, advance=1)
-
+    def transcribe(self, audio_segments_path: List) -> List:
         with ThreadPoolExecutor() as executor:
-            executor_function = partial(
-                self.get_audio_transcription, update_progress=update_progress
-            )
 
             results = list(
                 executor.map(
-                    executor_function,
+                    self.get_audio_transcription,
                     audio_segments_path,
                 )
             )

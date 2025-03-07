@@ -5,7 +5,6 @@ from typing import List
 
 import torchaudio
 import torch
-from rich.progress import Progress
 
 from src.utils import (
     get_file_name,
@@ -22,6 +21,8 @@ class AudioExtractorService:
         self.settings = settings
         self.file_name: str = ""
         self.folder_path: str = ""
+        self.gap_threshold: float = 1.0
+        self.max_segment_length: float = 5.0
 
         # Load Silero VAD model
         self.model, utils = torch.hub.load(
@@ -37,15 +38,12 @@ class AudioExtractorService:
             _,
         ) = utils
 
-    def extract_audio(
-        self, video_path: str, progress_manager: Progress
-    ) -> str:
+    def extract_audio(self, video_path: str) -> str:
         """
         Extract audio from a video file using ffmpeg
 
         Args:
             video_path: Path to the video file
-            progress_manager: Progress instance to update progress
 
         Returns:
             Path to the extracted audio file
@@ -53,9 +51,7 @@ class AudioExtractorService:
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
 
-        progress_task = progress_manager.add_task(
-            description="[green]Extracting audio...", total=1
-        )
+        print("    -> Extracting audio...")
 
         self.file_name = get_file_name(video_path)
         self.folder_path = os.path.join(
@@ -67,7 +63,7 @@ class AudioExtractorService:
 
         # Check if audio has already been extracted
         if os.path.exists(audio_path):
-            progress_manager.update(progress_task, advance=1)
+            print("      -> Audio already extracted - using cached version.")
 
             return audio_path
 
@@ -90,29 +86,21 @@ class AudioExtractorService:
         ]
 
         subprocess.run(ffmpeg_cmd, check=True)
-
-        progress_manager.update(progress_task, advance=1)
+        print("      -> Audio extracted successfully.")
 
         return audio_path
 
-    def extract_raw_segments(
-        self, audio_path: str, progress_manager: Progress
-    ) -> List:
+    def extract_raw_segments(self, audio_path: str) -> List:
         """
         Extract speech segments from an audio file
 
         Args:
             audio_path: Path to the audio file
-            progress_manager: Progress instance to update progress
 
         Returns:
             JSON string containing speech segments
         """
-
-        progress_task = progress_manager.add_task(
-            description="[green]Extracting raw speech segments...",
-            start=False,
-        )
+        print("    -> Extracting raw segments...")
 
         raw_speech_segments_file_path = os.path.join(
             self.folder_path, "raw_speech_segments.json"
@@ -120,14 +108,16 @@ class AudioExtractorService:
 
         if os.path.exists(raw_speech_segments_file_path):
             try:
-                progress_manager.update(progress_task, total=1)
-                progress_manager.start_task(progress_task)
-
                 speech_segments = read_from_json_file(
                     raw_speech_segments_file_path, expected_type=list
                 )
 
-                progress_manager.update(progress_task, advance=1)
+                message = (
+                    "      -> Raw speech segments already extracted - "
+                    "using cached version."
+                )
+
+                print(message)
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
@@ -150,21 +140,45 @@ class AudioExtractorService:
             wav, self.model, sampling_rate=16000
         )
 
-        progress_manager.update(progress_task, total=len(speech_timestamps))
-        progress_manager.start_task(progress_task)
-
         segments = []
         for ts in speech_timestamps:
             start_sec = ts["start"] / 16000  # Convert from samples to seconds
             end_sec = ts["end"] / 16000  # Convert from samples to seconds
-            segment = {"start": start_sec, "end": end_sec}
-            segments.append(segment)
+            segments.append({"start": start_sec, "end": end_sec})
 
-            progress_manager.update(progress_task, advance=1)
+        combined_segments = []
+        current_segment = None
+
+        for seg in segments:
+            if not current_segment:
+                # If there's no "active" segment to merge into, start a new one
+                current_segment = seg
+            else:
+                gap = seg["start"] - current_segment["end"]
+                merged_length = seg["end"] - current_segment["start"]
+
+                # If gap is small enough AND the merged length won't
+                # exceed the limit, merge
+                if (
+                    gap < self.gap_threshold
+                    and merged_length <= self.max_segment_length
+                ):
+                    # Extend the current segment to the new end time
+                    current_segment["end"] = seg["end"]
+                else:
+                    # Otherwise, push the old one and start a new segment
+                    combined_segments.append(current_segment)
+                    current_segment = seg
+
+        # Append the last segment if it exists
+        if current_segment:
+            combined_segments.append(current_segment)
 
         save_to_file(
             raw_speech_segments_file_path,
-            json.dumps(segments, ensure_ascii=False, indent=2),
+            json.dumps(combined_segments, ensure_ascii=False, indent=2),
         )
 
-        return segments
+        print("      -> Raw speech segments extracted successfully.")
+
+        return combined_segments

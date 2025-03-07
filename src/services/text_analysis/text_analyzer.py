@@ -1,8 +1,6 @@
 import json
 import os
-from typing import List
-
-from rich.progress import Progress
+from typing import List, Union
 
 from src.services.ai.client import AIClient
 from src.prompts.text_analysis import (
@@ -24,8 +22,7 @@ class TextAnalyzerService:
         video_path: str,
         captions: str,
         segments: List,
-        progress_manager: Progress,
-    ) -> List:
+    ) -> Union[List, None]:
         """
         Analyze and refine text, deciding which segments to keep
 
@@ -33,7 +30,6 @@ class TextAnalyzerService:
             video_path: Path to the video file
             captions: Full captions in a string format
             segments: List of speech segments
-            progress_manager: Progress manager for updating progress
 
         Returns:
             List of segments to keep
@@ -41,10 +37,7 @@ class TextAnalyzerService:
         if not os.path.exists(video_path):
             raise FileNotFoundError(f"Video file not found: {video_path}")
 
-        progress_task = progress_manager.add_task(
-            description="[blue]Refining speech segments...",
-            total=1,
-        )
+        print("    -> Refining speech segments...")
 
         file_name = get_file_name(video_path)
         refined_speech_segments_path = os.path.join(
@@ -60,13 +53,20 @@ class TextAnalyzerService:
                     refined_speech_segments_path, expected_type=list
                 )
 
-                progress_manager.update(progress_task, advance=1)
+                message = (
+                    "      -> Refined speech segments already "
+                    "generated - using cached version."
+                )
+
+                print(message)
 
                 return speech_segments
             except json.decoder.JSONDecodeError:
                 pass
 
         data = {"captions": captions, "segments": segments}
+
+        response = None
 
         try:
             response = self.ai_service.request(
@@ -85,13 +85,12 @@ class TextAnalyzerService:
                 json.dumps(response_obj, ensure_ascii=False, indent=2),
             )
 
-            progress_manager.update(progress_task, advance=1)
-
+            print("      -> Speech segments refined.")
             return response_obj
         except json.JSONDecodeError:
-            print("    -> Error: AI response is not valid JSON")
+            print(f"    -> Error: AI response is not valid JSON: {response}")
 
-            return segments
+            return None
         except Exception as e:
             print(f"    -> Error calling OpenAI API: {str(e)}")
-            return segments
+            return None

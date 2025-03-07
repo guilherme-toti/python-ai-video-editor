@@ -21,12 +21,21 @@ class OpenAI:
             options = dict()
 
         response = self.client.chat.completions.create(
-            model="gpt-4-turbo",
+            model="gpt-4o",
             messages=[
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt},
             ],
+            stream=True,
+            max_completion_tokens=16000,
             **options,
         )
 
-        return response.choices[0].message.content
+        result = []
+        for chunk in response:
+            result.append(chunk.choices[0].delta.content)
+
+        result = [m for m in result if m is not None]
+        full_result = ''.join(result)
+
+        return full_result

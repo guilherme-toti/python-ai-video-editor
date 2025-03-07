@@ -41,8 +41,8 @@ env:
 		echo ".env file already exists"; \
 	fi
 
-run: 
-	$(PYTHON) main.py
+run:
+	source ${VENV_DIR}/bin/activate && $(PYTHON) main.py
 
 lint:
 	$(PYTHON) -m flake8 $(SRC_DIR)

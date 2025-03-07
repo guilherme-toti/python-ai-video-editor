@@ -2,6 +2,8 @@ import json
 import os
 from typing import List
 
+from slugify import slugify
+
 
 def get_file_name(file_path: str) -> str:
     """
@@ -14,7 +16,7 @@ def get_file_name(file_path: str) -> str:
         str: The name of the file without the extension.
     """
     try:
-        return os.path.basename(file_path).split(".")[0]
+        return slugify(os.path.splitext(os.path.basename(file_path))[0])
     except Exception as e:
         print(f"Error extracting file name: {e}")
         return file_path

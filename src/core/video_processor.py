@@ -1,72 +1,14 @@
 import os
-from typing import Protocol, List
 
-from rich.console import Console
-from rich.progress import (
-    Progress,
-    SpinnerColumn,
-    TextColumn,
-    TaskProgressColumn,
-    BarColumn,
+from src.core.progress_manager import progress_object
+from src.core.protocols import (
+    AudioExtractor,
+    Transcriber,
+    TextAnalyzer,
+    VideoEditor,
+    ContentGenerator,
 )
-from rich.text import Text
-
 from src.utils import get_file_name, check_or_create_folder
-
-
-class AudioExtractor(Protocol):
-    def extract_audio(
-        self, video_path: str, progress_manager: Progress
-    ) -> str: ...
-
-    def extract_raw_segments(
-        self, audio_path: str, progress_manager: Progress
-    ) -> List: ...
-
-
-class Transcriber(Protocol):
-    def transcribe(
-        self,
-        audio_path: str,
-        speech_segments: List,
-        progress_manager: Progress,
-    ) -> List: ...
-
-
-class TextAnalyzer(Protocol):
-    def refine_speech_segments(
-        self,
-        video_path: str,
-        captions: str,
-        segments: List,
-        progress_manager: Progress,
-    ) -> List: ...
-
-
-class VideoEditor(Protocol):
-    def edit_video(
-        self, video_path: str, segments: List, progress_manager: Progress
-    ) -> None: ...
-
-
-class ContentGenerator(Protocol):
-    def generate_captions(
-        self, segments: List, video_path: str, progress_manager: Progress
-    ) -> str: ...
-
-    def generate_social_media_content(
-        self, video_path: str, captions: str, progress_manager: Progress
-    ) -> tuple: ...
-
-
-STEPS = "7"
-
-progress = Progress(
-    SpinnerColumn(),
-    TextColumn("[progress.description]{task.description}"),
-    BarColumn(),
-    TaskProgressColumn(),
-)
 
 
 class VideoProcessor:
@@ -109,35 +51,30 @@ class VideoProcessor:
         Returns:
             dict: Results including paths to generated files and content
         """
-        console = Console()
-        text = Text(f"Processing video: {video_path}")
-        text.stylize("bold green")
-        console.print(text)
+        file_name = get_file_name(video_path)
 
-        with progress as progress_manager:
+        with progress_object as progress_manager:
             try:
+                print(f"Processing video: {file_name}")
+
                 self.create_temp_folder(video_path)
 
                 audio_path = self.audio_extractor.extract_audio(
                     video_path=video_path,
-                    progress_manager=progress_manager,
                 )
 
                 speech_segments = self.audio_extractor.extract_raw_segments(
                     audio_path,
-                    progress_manager=progress_manager,
                 )
 
                 transcribed_speech_segments = self.transcriber.transcribe(
                     audio_path=audio_path,
                     speech_segments=speech_segments,
-                    progress_manager=progress_manager,
                 )
 
                 captions = self.content_generator.generate_captions(
                     video_path=video_path,
                     segments=transcribed_speech_segments,
-                    progress_manager=progress_manager,
                 )
 
                 refined_speech_segments = (
@@ -145,9 +82,18 @@ class VideoProcessor:
                         video_path=video_path,
                         captions=captions,
                         segments=transcribed_speech_segments,
-                        progress_manager=progress_manager,
                     )
                 )
+
+                if not refined_speech_segments:
+                    error_message = (
+                        f"Video {file_name} failed to create"
+                        " refined speech segments 🚫"
+                    )
+
+                    print(error_message)
+
+                    return
 
                 self.video_editor.edit_video(
                     video_path,
@@ -158,19 +104,14 @@ class VideoProcessor:
                 self.content_generator.generate_social_media_content(
                     video_path=video_path,
                     captions=captions,
-                    progress_manager=progress_manager,
                 )
 
-                self.delete_temp_folder(video_path)
+                # self.delete_temp_folder(video_path)
+
+                print(f"Video {file_name} completed ✅")
             except Exception as e:
                 import traceback
 
                 print(f"Error in video processing: {str(e)}")
                 print(traceback.format_exc())
                 raise
-
-        os.system('cls' if os.name == 'nt' else 'clear')
-
-        text = Text(f"Finished processing: {video_path} ✅")
-        text.stylize("bold green")
-        console.print(text)
