@@ -55,7 +55,6 @@ class SpeechRecognition:
 
     def transcribe(self, audio_segments_path: List) -> List:
         with ThreadPoolExecutor() as executor:
-
             results = list(
                 executor.map(
                     self.get_audio_transcription,

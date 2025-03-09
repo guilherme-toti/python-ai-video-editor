@@ -142,6 +142,7 @@ class ContentGeneratorService:
         check_or_create_folder(self.output_path)
 
         linkedin_content = self.generate_linkedin_content(captions)
+
         threads_content = self.generate_threads_content(captions)
 
         return linkedin_content, threads_content

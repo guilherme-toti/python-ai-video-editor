@@ -38,3 +38,7 @@ class ContentGenerator(Protocol):
     def generate_social_media_content(
         self, video_path: str, captions: str
     ) -> tuple: ...
+
+
+class Trello(Protocol):
+    def add_comment(self, card_id: str, comment: str) -> int: ...

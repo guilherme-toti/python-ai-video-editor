@@ -1,4 +1,5 @@
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 from src.core.progress_manager import progress_object
 from src.core.protocols import (
@@ -8,6 +9,7 @@ from src.core.protocols import (
     VideoEditor,
     ContentGenerator,
 )
+from src.services.third_party.trello import Trello
 from src.utils import get_file_name, check_or_create_folder
 
 
@@ -27,6 +29,7 @@ class VideoProcessor:
         self.text_analyzer = text_analyzer
         self.video_editor = video_editor
         self.content_generator = content_generator
+        self.trello = Trello()
         self.settings = settings
 
     def create_temp_folder(self, video_path: str):
@@ -101,10 +104,27 @@ class VideoProcessor:
                     progress_manager=progress_manager,
                 )
 
-                self.content_generator.generate_social_media_content(
-                    video_path=video_path,
-                    captions=captions,
+                linkedin_content, threads_content = (
+                    self.content_generator.generate_social_media_content(
+                        video_path=video_path,
+                        captions=captions,
+                    )
                 )
+
+                with ThreadPoolExecutor() as executor:
+                    linkedin_comment = executor.submit(
+                        self.trello.add_comment,
+                        file_name,
+                        f"**LinkedIn Post:**\n```{linkedin_content}```",
+                    )
+                    threads_comment = executor.submit(
+                        self.trello.add_comment,
+                        file_name,
+                        f"**Threads Post:**\n```{threads_content}```",
+                    )
+
+                    linkedin_comment.result()
+                    threads_comment.result()
 
                 # self.delete_temp_folder(video_path)
 

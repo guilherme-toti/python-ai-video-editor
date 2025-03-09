@@ -10,3 +10,4 @@ python-dotenv
 rich
 pre-commit
 python-slugify
+requests
