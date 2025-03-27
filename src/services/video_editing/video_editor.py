@@ -98,7 +98,7 @@ class VideoEditorService:
             "-map",
             "[outa]",
             "-crf",
-            "12",  # Changed to 12 to test quality
+            "12",
             "-preset",
             "slow",
             "-c:a",
