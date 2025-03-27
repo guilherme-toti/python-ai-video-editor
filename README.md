@@ -78,11 +78,17 @@ cp .env.example .env
 
 ### Workflow
 
+#### If you want to use Trello:
 1. Create a Trello card for your video
 2. Use the "API Developer ID Helper (by Sensum365)" Trello Power Up to get the Card ID
 3. Rename your video file to include the Trello card ID (e.g., "67cc79f9b57bbf8b65d9409d.mov")
-4. Place the video file in the `data/raw` directory
-5. Run the video processor:
+
+#### If you do not want to use Trello:
+1. Change the setting `is_trello_enabled` variable to `False` in `src/config/settings.py`
+
+#### Run the video processor
+1. Place the video file in the `data/raw` directory
+2. Run the video processor:
 
 ```bash
 # Using make

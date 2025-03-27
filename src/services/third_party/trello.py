@@ -8,8 +8,8 @@ class Trello:
     def __init__(self):
         self.base_url = "https://api.trello.com/1"
         self.authentication = {
-            "key": os.environ["TRELLO_API_KEY"],
-            "token": os.environ["TRELLO_TOKEN"],
+            "key": os.environ.get("TRELLO_API_KEY", ""),
+            "token": os.environ.get("TRELLO_TOKEN", ""),
         }
 
     def request(self, url: str, method: str = "GET", query=None):

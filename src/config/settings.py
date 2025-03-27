@@ -12,6 +12,7 @@ class Settings:
 
     # You can add more settings as needed
     video_formats: tuple = (".mp4", ".mov", ".avi", ".mkv")
+    is_trello_enabled: bool = True
 
     def __init__(self):
         os.makedirs(self.raw_dir, exist_ok=True)

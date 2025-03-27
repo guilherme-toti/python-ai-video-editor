@@ -9,7 +9,9 @@ class OpenAI:
     def __init__(self):
         load_dotenv()
 
-        self.client = openai.OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+        self.client = openai.OpenAI(
+            api_key=os.environ.get("OPENAI_API_KEY", "")
+        )
 
     def request(
         self,

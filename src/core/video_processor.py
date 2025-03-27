@@ -111,20 +111,21 @@ class VideoProcessor:
                     )
                 )
 
-                with ThreadPoolExecutor() as executor:
-                    linkedin_comment = executor.submit(
-                        self.trello.add_comment,
-                        file_name,
-                        f"### LinkedIn Post\n```{linkedin_content}```",
-                    )
-                    threads_comment = executor.submit(
-                        self.trello.add_comment,
-                        file_name,
-                        f"### Threads Post\n\n{threads_content}",
-                    )
+                if self.settings.is_trello_enabled:
+                    with ThreadPoolExecutor() as executor:
+                        linkedin_comment = executor.submit(
+                            self.trello.add_comment,
+                            file_name,
+                            f"### LinkedIn Post\n```{linkedin_content}```",
+                        )
+                        threads_comment = executor.submit(
+                            self.trello.add_comment,
+                            file_name,
+                            f"### Threads Post\n\n{threads_content}",
+                        )
 
-                    linkedin_comment.result()
-                    threads_comment.result()
+                        linkedin_comment.result()
+                        threads_comment.result()
 
                 self.delete_temp_folder(video_path)
 
