@@ -115,18 +115,18 @@ class VideoProcessor:
                     linkedin_comment = executor.submit(
                         self.trello.add_comment,
                         file_name,
-                        f"**LinkedIn Post:**\n```{linkedin_content}```",
+                        f"### LinkedIn Post\n```{linkedin_content}```",
                     )
                     threads_comment = executor.submit(
                         self.trello.add_comment,
                         file_name,
-                        f"**Threads Post:**\n```{threads_content}```",
+                        f"### Threads Post\n\n{threads_content}",
                     )
 
                     linkedin_comment.result()
                     threads_comment.result()
 
-                # self.delete_temp_folder(video_path)
+                self.delete_temp_folder(video_path)
 
                 print(f"Video {file_name} completed ✅")
             except Exception as e:
