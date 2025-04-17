@@ -2,13 +2,10 @@ import os
 from typing import Optional
 
 import openai
-from dotenv import load_dotenv
 
 
 class OpenAI:
     def __init__(self):
-        load_dotenv()
-
         self.client = openai.OpenAI(
             api_key=os.environ.get("OPENAI_API_KEY", "")
         )

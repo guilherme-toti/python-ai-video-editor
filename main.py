@@ -1,6 +1,7 @@
 import sys
 import os
 import traceback
+from dotenv import load_dotenv
 
 from src.config.settings import Settings
 from src.core.video_processor import VideoProcessor
@@ -10,6 +11,9 @@ from src.services.transcription.transcriber import TranscriptionService
 from src.services.text_analysis.text_analyzer import TextAnalyzerService
 from src.services.video_editing.video_editor import VideoEditorService
 from src.services.content.content_generator import ContentGeneratorService
+
+
+load_dotenv()
 
 
 def main():
